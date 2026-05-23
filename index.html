@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dino Pizza Hero</title>
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #0a0a0a;
+            overflow-x: hidden;
+        }
+
+        /* ---------- HERO SECTION ---------- */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        /* --- Video Background --- */
+        .hero__video-wrapper {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero__video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        /* --- Fallback poster image (optional gradient if video fails) --- */
+        .hero__video-fallback {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(135deg, #1a0a00 0%, #3d1c00 40%, #1a0a00 100%);
+            display: none;
+            /* Shown only if video fails via JS */
+        }
+
+        /* --- Dark Overlay for text readability --- */
+        .hero__overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.55);
+            /* subtle dark tint */
+            backdrop-filter: blur(0.5px);
+            pointer-events: none;
+        }
+
+        /* --- Hero Content --- */
+        .hero__content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            animation: fadeInUp 1.2s ease-out 0.3s both;
+        }
+
+        .hero__badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 9999px;
+            padding: 0.5rem 1.4rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #ffd699;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero__title {
+            font-size: clamp(2.8rem, 7vw, 5.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+            letter-spacing: -0.02em;
+        }
+
+        .hero__title .highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff8c42, #ffb347, #ff6b35);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 4px 12px rgba(255, 140, 66, 0.4));
+        }
+
+        .hero__subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2.5rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero__cta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.9rem 2.2rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn--primary {
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn--primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 40px rgba(255, 107, 53, 0.6);
+            background: linear-gradient(135deg, #ff7b4a, #ff9d5c);
+        }
+
+        .btn--primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .btn--secondary {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
+        .btn--secondary:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Scroll indicator --- */
+        .hero__scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: bounceDown 2s ease-in-out infinite;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .hero__scroll-indicator span {
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .hero__scroll-indicator .arrow {
+            width: 24px;
+            height: 24px;
+            border-right: 2px solid rgba(255, 255, 255, 0.8);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.8);
+            transform: rotate(45deg);
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounceDown {
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(10px);
+            }
+        }
+
+        /* --- Simple demo section below hero --- */
+        .section-below {
+            background: #0a0a0a;
+            padding: 5rem 2rem;
+            text-align: center;
+            color: #ccc;
+        }
+
+        .section-below h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .section-below p {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            color: #aaa;
+        }
+
+        /* --- Responsive tweaks --- */
+        @media (max-width: 600px) {
+            .hero__cta-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .hero__scroll-indicator {
+                bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section class="hero" id="hero">
+
+        <!-- Video Background Wrapper -->
+        <div class="hero__video-wrapper">
+            <video
+                autoplay
+                loop
+                muted
+                playsinline
+                preload="auto"
+                poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%231a0a00' width='1920' height='1080'/%3E%3Ctext x='960' y='540' font-size='60' fill='%23ff8c42' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E🦕🍕%3C/text%3E%3C/svg%3E"
+                id="heroVideo"
+            >
+                <!-- Primary source: raw GitHub video -->
+                <source
+                    src="https://raw.githubusercontent.com/Pallab-office-LAW-1/Bj/372d440345e8ffe0d853c22141c4af9e3fe7bd74/dinosaur-eating-pizza.mp4"
+                    type="video/mp4"
+                >
+                <!-- Fallback message if browser can't play video -->
+                Your browser does not support the video tag.
+            </video>
+        </div>
+
+        <!-- Fallback background (shown only if video fails to load) -->
+        <div class="hero__video-fallback" id="videoFallback"></div>
+
+        <!-- Dark overlay -->
+        <div class="hero__overlay" aria-hidden="true"></div>
+
+        <!-- Hero Text Content -->
+        <div class="hero__content">
+            <span class="hero__badge">🦕 Fresh from the Cretaceous</span>
+            <h1 class="hero__title">
+                Dino Loves <span class="highlight">Pizza</span>
+            </h1>
+            <p class="hero__subtitle">
+                Watch this hungry T-Rex chow down on a slice of pepperoni perfection.
+                Rawr means "more please" in dinosaur.
+            </p>
+            <div class="hero__cta-group">
+                <a href="#watch" class="btn btn--primary">
+                    🍕 Watch the Feast
+                </a>
+                <a href="#about" class="btn btn--secondary">
+                    Learn More
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll-down indicator -->
+        <div class="hero__scroll-indicator" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})">
+            <span>Scroll</span>
+            <div class="arrow"></div>
+        </div>
+    </section>
+
+    <!-- ==================== DEMO SECTION BELOW ==================== -->
+    <section class="section-below" id="demo-section">
+        <h2>🦖 The Dino Pizza Loop</h2>
+        <p>
+            The hero video above is set to <strong>autoplay, loop, and mute</strong> —
+            perfect for a captivating background. The video is served directly from GitHub's raw CDN
+            and will play seamlessly across all modern browsers.
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: #777;">
+            Video credit: <em>dinosaur-eating-pizza.mp4</em> from the repository.
+        </p>
+    </section>
+
+    <!-- ==================== FALLBACK HANDLING SCRIPT ==================== -->
+    <script>
+        (function() {
+            const video = document.getElementById('heroVideo');
+            const fallback = document.getElementById('videoFallback');
+
+            // If after 3 seconds the video hasn't started playing (e.g., network error),
+            // show the fallback gradient background so the hero isn't blank.
+            let fallbackTimer = setTimeout(() => {
+                if (video.paused || video.readyState < 2) {
+                    fallback.style.display = 'block';
+                    video.style.opacity = '0.3';
+                }
+            }, 3500);
+
+            // Clear timer if video plays successfully
+            video.addEventListener('playing', () => {
+                clearTimeout(fallbackTimer);
+                fallback.style.display = 'none';
+                video.style.opacity = '1';
+            });
+
+            // Also handle error event
+            video.addEventListener('error', () => {
+                clearTimeout(fallbackTimer);
+                fallback.style.display = 'block';
+                video.style.opacity = '0.2';
+                console.warn('Hero video failed to load. Showing fallback background.');
+            });
+
+            // Ensure video tries to play (some browsers need explicit play())
+            video.play().catch(() => {
+                // Autoplay might be blocked; fallback already handles this
+                console.info('Autoplay may be restricted. Video will attempt to play on user interaction.');
+            });
+
+            // Retry on first user interaction if video is paused
+            const retryPlay = () => {
+                if (video.paused) {
+                    video.play().catch(() => {});
+                }
+                document.removeEventListener('click', retryPlay);
+                document.removeEventListener('touchstart', retryPlay);
+            };
+            document.addEventListener('click', retryPlay, { once: true });
+            document.addEventListener('touchstart', retryPlay, { once: true });
+        })();
+    </script>
+
+</body>
+</html>
